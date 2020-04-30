@@ -5,10 +5,10 @@ using System.Collections.Generic;
 public class LevelGenerator : Node2D
 {
     private Room[,] _worldGrid;
-    private int gridSizeX = 5;
-    private int gridSizeY = 5;
+    private int gridSizeX = 3;
+    private int gridSizeY = 3;
     private List<Vector2> _usedPositions;
-    private int numberOfRooms = 10;
+    private int numberOfRooms = 5;
     private RandomNumberGenerator rng;
 
     public override void _Ready(){
@@ -43,9 +43,14 @@ public class LevelGenerator : Node2D
 			randomCompare = Mathf.Lerp(randomCompareStart, randomCompareEnd, randomPerc);
             checkPosition = NewFreePosition(usedPositions);
             rng.Randomize();
-            rng.Randomize();
             if (NumberOfNeighbours(usedPositions, checkPosition) > 1 && rng.Randf() > randomPerc){
-                checkPosition = NewSelectivePosition(usedPositions, checkPosition);
+                int iterations = 0;
+                do{
+					checkPosition = NewFreePosition(usedPositions);
+					iterations++;
+				}while(NumberOfNeighbours(usedPositions, checkPosition) > 1 && iterations < 100);
+				if (iterations >= 100)
+					GD.Print("Could not create with fewer neighbors than : " + NumberOfNeighbours(usedPositions, checkPosition));
             }
 
             int x = Mathf.RoundToInt(checkPosition.x);
@@ -54,48 +59,6 @@ public class LevelGenerator : Node2D
             worldGrid[x + gridSizeX, y + gridSizeY] = new Room(x, y);
             usedPositions.Add(new Vector2(x, y));
         }
-    }
-
-    private Vector2 NewSelectivePosition(List<Vector2> usedPositions, Vector2 checkPos)
-    {
-        int iterations = 0;
-        Vector2 checkPosition = checkPos;
-        int x = 0, y = 0;
-        while(NumberOfNeighbours(usedPositions, checkPosition) > 1 || iterations < 200){
-            rng.Randomize();
-            int randIndex = rng.RandiRange(0, usedPositions.Count - 1);
-            x = Mathf.RoundToInt(usedPositions[randIndex].x);
-            y = Mathf.RoundToInt(usedPositions[randIndex].y);
-
-            rng.Randomize();
-            bool vertical = rng.Randf() > .5f;
-            rng.Randomize();
-            bool positive = rng.Randf() > .5f;
-
-            if (vertical){
-                if(positive){
-                    y += 1;
-                }
-                else{
-                    y -= 1;
-                }
-            }
-            else{
-                if(positive){
-                    x += 1;
-                }
-                else{
-                    x -= 1;
-                }
-            }
-            checkPosition = new Vector2(x, y);
-            iterations++;
-        }
-
-        if(iterations >= 200){
-            GD.Print("Unable to find position with only 1 neighbour, returning: " + x + " " + y);
-        }
-        return checkPosition;
     }
 
     private int NumberOfNeighbours(List<Vector2> usedPos, Vector2 checkPosition)
@@ -119,6 +82,8 @@ public class LevelGenerator : Node2D
 
     private Vector2 NewFreePosition(List<Vector2> usedPositions)
     {
+        int breakLimit = 1000000;
+        int index = 0;
         Vector2 checkPos = new Vector2();
         int x = 0;
         int y = 0;
@@ -150,7 +115,12 @@ public class LevelGenerator : Node2D
                 }
             }
             checkPos = new Vector2(x, y);
-        }while(usedPositions.Contains(checkPos) || x >= gridSizeX || x < -gridSizeX || y >= gridSizeY || y < -gridSizeY);
+            index++;
+            if(index >= breakLimit){
+                GD.Print("Could not find new free position");
+                break;
+            }
+        }while(NumberOfNeighbours(usedPositions, checkPos) > 1 || usedPositions.Contains(checkPos) || x >= gridSizeX || x < -gridSizeX || y >= gridSizeY || y < -gridSizeY);
 
         return checkPos;
     }
