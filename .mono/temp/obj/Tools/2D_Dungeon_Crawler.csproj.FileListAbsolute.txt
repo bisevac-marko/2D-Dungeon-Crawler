@@ -1,0 +1,6 @@
+/home/marko/Godot/Projects/2D_Dungeon_Crawler/.mono/temp/bin/Tools/2D_Dungeon_Crawler.dll
+/home/marko/Godot/Projects/2D_Dungeon_Crawler/.mono/temp/bin/Tools/2D_Dungeon_Crawler.pdb
+/home/marko/Godot/Projects/2D_Dungeon_Crawler/.mono/temp/obj/Tools/2D_Dungeon_Crawler.csprojAssemblyReference.cache
+/home/marko/Godot/Projects/2D_Dungeon_Crawler/.mono/temp/obj/Tools/2D_Dungeon_Crawler.csproj.CoreCompileInputs.cache
+/home/marko/Godot/Projects/2D_Dungeon_Crawler/.mono/temp/obj/Tools/2D_Dungeon_Crawler.dll
+/home/marko/Godot/Projects/2D_Dungeon_Crawler/.mono/temp/obj/Tools/2D_Dungeon_Crawler.pdb
