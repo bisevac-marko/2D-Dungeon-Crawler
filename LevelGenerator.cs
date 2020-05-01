@@ -5,13 +5,14 @@ using System.Collections.Generic;
 public class LevelGenerator : Node2D
 {
     private Room[,] _worldGrid;
-    private int gridSizeX = 3;
-    private int gridSizeY = 3;
+    private int gridSizeX = 5;
+    private int gridSizeY = 5;
     private List<Vector2> _usedPositions;
-    private int numberOfRooms = 5;
+    private int _numberOfRooms = 5;
     private RandomNumberGenerator rng;
 
-    public override void _Ready(){
+    public override void _Ready()
+    {
         _worldGrid = new Room[gridSizeX * 2, gridSizeY * 2];
         _usedPositions = new List<Vector2>();
         rng = new RandomNumberGenerator();
@@ -21,15 +22,73 @@ public class LevelGenerator : Node2D
         _usedPositions.Add(new Vector2(0, 0));
 
         CreateRooms(_worldGrid, _usedPositions);
+        SetRoomDoors(_worldGrid);
+        ////Debugging code
+        VisualizeRooms();
+    }
 
+    private void VisualizeRooms()
+    {
         var temp = GD.Load<PackedScene>("res://TestRoom.tscn");
-        
-        ////Debugging
-        foreach(Room room in _worldGrid){
-            if (room != null){
+        var label = GD.Load<PackedScene>("res://Label.tscn");
+        foreach (Room room in _worldGrid)
+        {
+            if (room != null)
+            {
                 Node2D roomPrefab = (Node2D)temp.Instance();
-                roomPrefab.GlobalPosition = new Vector2(room.x * 60, room.y * 60);
+                roomPrefab.GlobalPosition = new Vector2(room.x * 80, room.y * 80);
                 AddChild(roomPrefab);
+                Label labl = (Label)label.Instance();
+                labl.SetGlobalPosition(new Vector2(room.x * 80 - 20, room.y * 80 - 12));
+                labl.Text = room.x.ToString() + " " + room.y.ToString();
+                AddChild(labl);
+                if (room.rightDoor)
+                {
+                    Sprite door = (Sprite)GD.Load<PackedScene>("res://doorSprite.tscn").Instance();
+                    door.GlobalPosition = new Vector2(roomPrefab.GlobalPosition.x + 30, roomPrefab.GlobalPosition.y);
+                    AddChild(door);
+                }
+                if (room.leftDoor)
+                {
+                    Sprite door = (Sprite)GD.Load<PackedScene>("res://doorSprite.tscn").Instance();
+                    door.GlobalPosition = new Vector2(roomPrefab.GlobalPosition.x - 30, roomPrefab.GlobalPosition.y);
+                    AddChild(door);
+                }
+                if (room.downDoor)
+                {
+                    Sprite door = (Sprite)GD.Load<PackedScene>("res://doorSprite.tscn").Instance();
+                    door.GlobalPosition = new Vector2(roomPrefab.GlobalPosition.x, roomPrefab.GlobalPosition.y + 30);
+                    AddChild(door);
+                }
+                if (room.upDoor)
+                {
+                    Sprite door = (Sprite)GD.Load<PackedScene>("res://doorSprite.tscn").Instance();
+                    door.GlobalPosition = new Vector2(roomPrefab.GlobalPosition.x, roomPrefab.GlobalPosition.y - 30);
+                    AddChild(door);
+                }
+            }
+        }
+    }
+
+    private void SetRoomDoors(Room[,] worldGrid)
+    {
+        for (int x = 0; x < worldGrid.GetLength(0); x++){
+            for (int y = 0; y < worldGrid.GetLength(1); y++){
+                if (worldGrid[x, y] == null){
+                    continue;
+                }
+                if (x + 1 < gridSizeX * 2 && worldGrid[x+1, y] != null){
+                    worldGrid[x+1, y].leftDoor = true;
+                }
+                if(x - 1 >= 0 && worldGrid[x-1, y] != null){
+                    worldGrid[x-1, y].rightDoor = true;
+                }
+                if(y + 1 < gridSizeY * 2 && worldGrid[x, y+1] != null){
+                    worldGrid[x, y+1].upDoor = true;
+                }
+                if(y - 1 >= 0 && worldGrid[x, y-1] != null){
+                    worldGrid[x, y-1].downDoor = true;
+                }
             }
         }
     }
@@ -37,19 +96,17 @@ public class LevelGenerator : Node2D
     private void CreateRooms(Room[,] worldGrid, List<Vector2> usedPositions)
     {
         Vector2 checkPosition = new Vector2();
-        float randomCompare = 0.2f, randomCompareStart = 0.2f, randomCompareEnd = 0.01f;
-        for(int i = 0; i < numberOfRooms - 1; i++){
-            float randomPerc = ((float) i) / (((float)numberOfRooms - 1));
-			randomCompare = Mathf.Lerp(randomCompareStart, randomCompareEnd, randomPerc);
+        for(int i = 0; i < _numberOfRooms - 1; i++){
             checkPosition = NewFreePosition(usedPositions);
             rng.Randomize();
-            if (NumberOfNeighbours(usedPositions, checkPosition) > 1 && rng.Randf() > randomPerc){
+            float randomChance = rng.Randf();
+            if (NumberOfNeighbours(usedPositions, checkPosition) > 1 && randomChance > .2f){
                 int iterations = 0;
                 do{
 					checkPosition = NewFreePosition(usedPositions);
 					iterations++;
-				}while(NumberOfNeighbours(usedPositions, checkPosition) > 1 && iterations < 100);
-				if (iterations >= 100)
+				}while(NumberOfNeighbours(usedPositions, checkPosition) > 1 && iterations < 1000);
+				if (iterations >= 1000)
 					GD.Print("Could not create with fewer neighbors than : " + NumberOfNeighbours(usedPositions, checkPosition));
             }
 
@@ -64,7 +121,6 @@ public class LevelGenerator : Node2D
     private int NumberOfNeighbours(List<Vector2> usedPos, Vector2 checkPosition)
     {
         int count = 0;
-
         if (usedPos.Contains(checkPosition + Vector2.Right)){
             count++;
         }
@@ -82,8 +138,8 @@ public class LevelGenerator : Node2D
 
     private Vector2 NewFreePosition(List<Vector2> usedPositions)
     {
-        int breakLimit = 1000000;
-        int index = 0;
+        int breakLimit = 10000;
+        int iterations = 0;
         Vector2 checkPos = new Vector2();
         int x = 0;
         int y = 0;
@@ -115,13 +171,12 @@ public class LevelGenerator : Node2D
                 }
             }
             checkPos = new Vector2(x, y);
-            index++;
-            if(index >= breakLimit){
-                GD.Print("Could not find new free position");
+            iterations++;
+            if(iterations >= breakLimit){
+                GD.Print("Error: Could not find new free position");
                 break;
             }
-        }while(NumberOfNeighbours(usedPositions, checkPos) > 1 || usedPositions.Contains(checkPos) || x >= gridSizeX || x < -gridSizeX || y >= gridSizeY || y < -gridSizeY);
-
+        }while(usedPositions.Contains(checkPos) || x >= gridSizeX || x < -gridSizeX || y >= gridSizeY || y < -gridSizeY);
         return checkPos;
     }
 }

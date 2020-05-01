@@ -1,0 +1,17 @@
+[gd_scene format=2]
+
+[node name="Label" type="Label"]
+anchor_right = 0.074
+anchor_bottom = 0.05
+margin_right = -37.776
+margin_bottom = -15.0
+rect_scale = Vector2( 2, 2 )
+custom_colors/font_color = Color( 0.772549, 0.72549, 0, 1 )
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "test"
+align = 1
+valign = 1
+percent_visible = -0.25
+__meta__ = {
+"_edit_use_anchors_": false
+}
