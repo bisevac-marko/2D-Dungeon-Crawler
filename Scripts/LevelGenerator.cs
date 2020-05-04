@@ -8,68 +8,24 @@ public class LevelGenerator : Node2D
     private int gridSizeX = 5;
     private int gridSizeY = 5;
     private List<Vector2> _usedPositions;
-    private int _numberOfRooms = 5;
+    private int _numberOfRooms = 8;
     private RandomNumberGenerator rng;
-
-    public override void _Ready()
+    public Room[,] GenerateLevel(int gridSizeX, int gridSizeY)
     {
+        this.gridSizeX = gridSizeX;
+        this.gridSizeY = gridSizeY;
         _worldGrid = new Room[gridSizeX * 2, gridSizeY * 2];
         _usedPositions = new List<Vector2>();
         rng = new RandomNumberGenerator();
 
         //Add starting room;
-        _worldGrid[gridSizeX, gridSizeY] = new Room(0, 0);
+        _worldGrid[gridSizeX, gridSizeY] = new Room(0, 0, Room.Type.Starting);
         _usedPositions.Add(new Vector2(0, 0));
 
         CreateRooms(_worldGrid, _usedPositions);
         SetRoomDoors(_worldGrid);
-        ////Debugging code
-        VisualizeRooms();
+        return _worldGrid;
     }
-
-    private void VisualizeRooms()
-    {
-        var temp = GD.Load<PackedScene>("res://TestRoom.tscn");
-        var label = GD.Load<PackedScene>("res://Label.tscn");
-        foreach (Room room in _worldGrid)
-        {
-            if (room != null)
-            {
-                Node2D roomPrefab = (Node2D)temp.Instance();
-                roomPrefab.GlobalPosition = new Vector2(room.x * 80, room.y * 80);
-                AddChild(roomPrefab);
-                Label labl = (Label)label.Instance();
-                labl.SetGlobalPosition(new Vector2(room.x * 80 - 20, room.y * 80 - 12));
-                labl.Text = room.x.ToString() + " " + room.y.ToString();
-                AddChild(labl);
-                if (room.rightDoor)
-                {
-                    Sprite door = (Sprite)GD.Load<PackedScene>("res://doorSprite.tscn").Instance();
-                    door.GlobalPosition = new Vector2(roomPrefab.GlobalPosition.x + 30, roomPrefab.GlobalPosition.y);
-                    AddChild(door);
-                }
-                if (room.leftDoor)
-                {
-                    Sprite door = (Sprite)GD.Load<PackedScene>("res://doorSprite.tscn").Instance();
-                    door.GlobalPosition = new Vector2(roomPrefab.GlobalPosition.x - 30, roomPrefab.GlobalPosition.y);
-                    AddChild(door);
-                }
-                if (room.downDoor)
-                {
-                    Sprite door = (Sprite)GD.Load<PackedScene>("res://doorSprite.tscn").Instance();
-                    door.GlobalPosition = new Vector2(roomPrefab.GlobalPosition.x, roomPrefab.GlobalPosition.y + 30);
-                    AddChild(door);
-                }
-                if (room.upDoor)
-                {
-                    Sprite door = (Sprite)GD.Load<PackedScene>("res://doorSprite.tscn").Instance();
-                    door.GlobalPosition = new Vector2(roomPrefab.GlobalPosition.x, roomPrefab.GlobalPosition.y - 30);
-                    AddChild(door);
-                }
-            }
-        }
-    }
-
     private void SetRoomDoors(Room[,] worldGrid)
     {
         for (int x = 0; x < worldGrid.GetLength(0); x++){
@@ -105,19 +61,18 @@ public class LevelGenerator : Node2D
                 do{
 					checkPosition = NewFreePosition(usedPositions);
 					iterations++;
-				}while(NumberOfNeighbours(usedPositions, checkPosition) > 1 && iterations < 1000);
-				if (iterations >= 1000)
+				}while(NumberOfNeighbours(usedPositions, checkPosition) > 1 && iterations < 200);
+				if (iterations >= 200)
 					GD.Print("Could not create with fewer neighbors than : " + NumberOfNeighbours(usedPositions, checkPosition));
             }
 
             int x = Mathf.RoundToInt(checkPosition.x);
             int y = Mathf.RoundToInt(checkPosition.y);
 
-            worldGrid[x + gridSizeX, y + gridSizeY] = new Room(x, y);
+            worldGrid[x + gridSizeX, y + gridSizeY] = new Room(x, y, Room.Type.Normal);
             usedPositions.Add(new Vector2(x, y));
         }
     }
-
     private int NumberOfNeighbours(List<Vector2> usedPos, Vector2 checkPosition)
     {
         int count = 0;
@@ -138,7 +93,7 @@ public class LevelGenerator : Node2D
 
     private Vector2 NewFreePosition(List<Vector2> usedPositions)
     {
-        int breakLimit = 10000;
+        int breakLimit = 1000;
         int iterations = 0;
         Vector2 checkPos = new Vector2();
         int x = 0;
