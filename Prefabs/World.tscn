@@ -1,7 +1,6 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://Scripts/Game.cs" type="Script" id=2]
-[ext_resource path="res://Prefabs/Level Drawer.tscn" type="PackedScene" id=3]
 [ext_resource path="res://Prefabs/Level Generator.tscn" type="PackedScene" id=4]
 
 [node name="Game" type="Node2D"]
@@ -9,8 +8,6 @@ script = ExtResource( 2 )
 
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true
-zoom = Vector2( 0.2, 0.2 )
+zoom = Vector2( 2, 2 )
 
 [node name="Level Generator" parent="." instance=ExtResource( 4 )]
-
-[node name="Level Drawer" parent="." instance=ExtResource( 3 )]
