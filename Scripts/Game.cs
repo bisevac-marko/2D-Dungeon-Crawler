@@ -6,24 +6,33 @@ public class Game : Node2D
     private int gridSizeX = 5; //half extends
     private int gridSizeY = 5; //half extends
     private LevelGenerator _levelGenerator;
+    private EnemySpawner _enemySpawner;
     private Room[,] _worldGrid;
     private KinematicBody2D _player;
     private Room _currentRoom;
     private Camera2D _mainCam;
     private Dictionary<Room, List<Area2D>> _doorMap;
 
+
     public override void _Ready()
     {
         _levelGenerator = GetNode<LevelGenerator>("Level Generator");
+        _enemySpawner = GetNode<EnemySpawner>("Enemy Spawner");
         _mainCam = GetNode<Camera2D>("Camera2D");
         _player = (KinematicBody2D)GD.Load<PackedScene>("res://Prefabs/Player.tscn").Instance();
+        //Generate Level
         _worldGrid = _levelGenerator.GenerateLevel(gridSizeX, gridSizeY);
-        _currentRoom = _worldGrid[gridSizeX, gridSizeY]; //Starting room
+        //Get door map
         _doorMap = _levelGenerator.GetDoorMap();
-        OpenRoomDoors(_doorMap[_currentRoom]);
+        //Connect door signals
         ConnectDoorSignals(_doorMap);
+        _currentRoom = _levelGenerator.GetStartingRoom();// make it a starting room
+        //Open starting room doors
+        OpenRoomDoors(_doorMap[_currentRoom]);
+        _enemySpawner.SpawnEnemys(_worldGrid);
         AddChild(_player);
         _player.GlobalPosition = new Vector2(_levelGenerator.GetStartingRoom().globalX, _levelGenerator.GetStartingRoom().globalY);
+        _mainCam.GlobalPosition = new Vector2(_levelGenerator.GetStartingRoom().globalX, _levelGenerator.GetStartingRoom().globalY);
     }
 
     private void OpenRoomDoors(List<Area2D> roomDoors)
@@ -50,7 +59,7 @@ public class Game : Node2D
 
         float xDir = _currentRoom.globalX - playerX;
         float yDir = _currentRoom.globalY - playerY;
-        float treshold = 20f; 
+        float treshold = 20f;
 
         if(xDir > treshold){
             //LEFT

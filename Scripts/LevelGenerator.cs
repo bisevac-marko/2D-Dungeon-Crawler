@@ -22,7 +22,7 @@ public class LevelGenerator : Node2D
         rng = new RandomNumberGenerator();
         _doorMap = new Dictionary<Room, List<Area2D>>();
 
-        _worldGrid[gridSizeX, gridSizeY] = new Room(0, 0, Room.Type.Normal);
+        _worldGrid[gridSizeX, gridSizeY] = new Room(0, 0, 1);
         _usedPositions.Add(new Vector2(0, 0));
 
         CreateRoomMap(_worldGrid, _usedPositions);
@@ -52,7 +52,7 @@ public class LevelGenerator : Node2D
             int x = Mathf.RoundToInt(checkPosition.x);
             int y = Mathf.RoundToInt(checkPosition.y);
 
-            worldGrid[x + gridSizeX, y + gridSizeY] = new Room(x, y, Room.Type.Normal);
+            worldGrid[x + gridSizeX, y + gridSizeY] = new Room(x, y, 0);
             usedPositions.Add(new Vector2(x, y));
         }
     }
@@ -79,7 +79,6 @@ public class LevelGenerator : Node2D
                 }
             }
         }
-
         return numberOfDoors;
     }
 
@@ -178,7 +177,7 @@ public class LevelGenerator : Node2D
                 if (room.downDoor)
                 {
                     Area2D door = (Area2D)doorPrefab.Instance();
-                    door.GlobalPosition = new Vector2(room.globalX, room.globalY + (room.roomSizeY / 2));
+                    door.GlobalPosition = new Vector2(room.globalX, room.globalY + (room.roomSizeY / 2) - 20);
                     AddChild(door);
                     door.Monitoring = false;
                     doors.Add(door);
@@ -197,28 +196,28 @@ public class LevelGenerator : Node2D
     }
     private void SetRoomType(Room[,] rooms){
         Room checkRoom = rooms[gridSizeX, gridSizeY];
-        float currentHighestDistance = 0;
+        float currentMaxDistance = 0;
         foreach(Room room in rooms){
             if(room != null){
                 float checkDistance = (new Vector2(room.globalX, room.globalY) - new Vector2(checkRoom.globalX, checkRoom.globalY)).LengthSquared();
-                if(currentHighestDistance < checkDistance){
-                    currentHighestDistance = checkDistance;
+                if(currentMaxDistance < checkDistance){
+                    currentMaxDistance = checkDistance;
                     _startingRoom = room;
                 }
             }
         }
-        _startingRoom.type = Room.Type.Starting;
+        _startingRoom.type = 1;
         float currDistance = 0;
         foreach(Room room in rooms){
             if(room != null){
-                float distance = (new Vector2(startingRoom.globalX, startingRoom.globalY) - new Vector2(room.globalX, room.globalY)).LengthSquared();
-                if (distance > currDistance){
+                float distance = (new Vector2(_startingRoom.globalX, _startingRoom.globalY) - new Vector2(room.globalX, room.globalY)).LengthSquared();
+                if (distance > currentMaxDistance){
                     _bossRoom = room;
-                    currDistance = distance;
+                    currentMaxDistance = distance;
                 }
             }
         }
-        _bossRoom.type = Room.Type.Boss;
+        _bossRoom.type = 2;
     }
     public Dictionary<Room, List<Area2D>> GetDoorMap(){
         return this._doorMap;
