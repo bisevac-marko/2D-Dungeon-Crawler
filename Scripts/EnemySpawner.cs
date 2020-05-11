@@ -1,8 +1,8 @@
 using Godot;
 using System.Collections.Generic;
 
-public class EnemySpawner : Node2D
-{
+public class EnemySpawner : Node2D{
+
     private List<KinematicBody2D> _enemys;
     private PackedScene _enemyScene;
     private RandomNumberGenerator rng;
@@ -16,7 +16,6 @@ public class EnemySpawner : Node2D
     public void SpawnEnemys(Room[,] rooms){
         foreach(Room room in rooms){
             if(room == null) continue;
-            GD.Print(room.type);
             if(room.type == 0){
                 rng.Randomize();
                 int numberOfEnemys = rng.RandiRange(3, 7);

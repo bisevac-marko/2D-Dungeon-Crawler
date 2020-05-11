@@ -1,7 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 
-public class LevelGenerator : Node2D
+public class LevelGenerator 
 {
     private Room[,] _worldGrid;
     private int gridSizeX = 5;
@@ -9,18 +9,18 @@ public class LevelGenerator : Node2D
     private List<Vector2> _usedPositions;
     private int _numberOfRooms = 8;
     private RandomNumberGenerator rng;
-    private Dictionary<Room, List<Area2D>> _doorMap;
+    private RoomManager _roomManager;
     private Room _startingRoom;
     private Room _bossRoom;
 
-    public Room[,] GenerateLevel(int gridSizeX, int gridSizeY)
+    public Room[,] GenerateLevel(int gridSizeX, int gridSizeY, RoomManager roomManager)
     {
         this.gridSizeX = gridSizeX;
         this.gridSizeY = gridSizeY;
         _worldGrid = new Room[gridSizeX * 2, gridSizeY * 2];
         _usedPositions = new List<Vector2>();
         rng = new RandomNumberGenerator();
-        _doorMap = new Dictionary<Room, List<Area2D>>();
+        _roomManager = roomManager;
 
         _worldGrid[gridSizeX, gridSizeY] = new Room(0, 0, 1);
         _usedPositions.Add(new Vector2(0, 0));
@@ -28,7 +28,6 @@ public class LevelGenerator : Node2D
         CreateRoomMap(_worldGrid, _usedPositions);
         SetRoomDoors(_worldGrid);
         SetRoomType(_worldGrid);
-        PlaceRoomsAndDoors(_worldGrid, _doorMap);
 
         return _worldGrid;
     }
@@ -56,10 +55,9 @@ public class LevelGenerator : Node2D
             usedPositions.Add(new Vector2(x, y));
         }
     }
-    private int SetRoomDoors(Room[,] worldGrid)
+    private void SetRoomDoors(Room[,] worldGrid)
     {
         int numberOfDoors = 0;
-
         for (int x = 0; x < worldGrid.GetLength(0); x++){
             for (int y = 0; y < worldGrid.GetLength(1); y++){
                 if (worldGrid[x, y] == null){
@@ -67,19 +65,24 @@ public class LevelGenerator : Node2D
                 }
                 if (x + 1 < gridSizeX * 2 && worldGrid[x+1, y] != null){
                     worldGrid[x+1, y].leftDoor = true;
+                    numberOfDoors++;
                 }
                 if(x - 1 >= 0 && worldGrid[x-1, y] != null){
                     worldGrid[x-1, y].rightDoor = true;
+                    numberOfDoors++;
                 }
                 if(y + 1 < gridSizeY * 2 && worldGrid[x, y+1] != null){
                     worldGrid[x, y+1].upDoor = true;
+                    numberOfDoors++;
                 }
                 if(y - 1 >= 0 && worldGrid[x, y-1] != null){
                     worldGrid[x, y-1].downDoor = true;
+                    numberOfDoors++;
                 }
+                //initialize door array
+                worldGrid[x, y].doors = new Area2D[numberOfDoors];
             }
         }
-        return numberOfDoors;
     }
 
     private int NumberOfNeighbours(List<Vector2> usedPos, Vector2 checkPosition)
@@ -144,56 +147,6 @@ public class LevelGenerator : Node2D
         return checkPos;
     }
 
-    public void PlaceRoomsAndDoors(Room[,] worldGrid, Dictionary<Room, List<Area2D>> dict){
-        var roomPrefab = GD.Load<PackedScene>("res://Prefabs/Room.tscn");
-        var doorPrefab = GD.Load<PackedScene>("res://Prefabs/Door.tscn");
-        Node2D roomScene;
-
-        foreach (Room room in worldGrid)
-        {
-            if (room != null)
-            {
-                List<Area2D> doors = new List<Area2D>();
-                roomScene = (Node2D)roomPrefab.Instance();
-                roomScene.GlobalPosition = new Vector2(room.globalX, room.globalY);
-                AddChild(roomScene);
-
-                if (room.rightDoor)
-                {
-                    Area2D door = (Area2D)doorPrefab.Instance();
-                    door.GlobalPosition = new Vector2(room.globalX + (room.roomSizeX / 2), room.globalY);
-                    AddChild(door);
-                    door.Monitoring = false;
-                    doors.Add(door);
-                }
-                if (room.leftDoor)
-                {
-                    Area2D door = (Area2D)doorPrefab.Instance();
-                    door.GlobalPosition = new Vector2(room.globalX - (room.roomSizeX / 2), room.globalY);
-                    AddChild(door);
-                    door.Monitoring = false;
-                    doors.Add(door);
-                }
-                if (room.downDoor)
-                {
-                    Area2D door = (Area2D)doorPrefab.Instance();
-                    door.GlobalPosition = new Vector2(room.globalX, room.globalY + (room.roomSizeY / 2) - 20);
-                    AddChild(door);
-                    door.Monitoring = false;
-                    doors.Add(door);
-                }
-                if (room.upDoor)
-                {
-                    Area2D door = (Area2D)doorPrefab.Instance();
-                    door.GlobalPosition = new Vector2(room.globalX, room.globalY - (room.roomSizeY / 2));
-                    AddChild(door);
-                    door.Monitoring = false;
-                    doors.Add(door);
-                }
-                dict.Add(room, doors);
-            }
-        }
-    }
     private void SetRoomType(Room[,] rooms){
         Room checkRoom = rooms[gridSizeX, gridSizeY];
         float currentMaxDistance = 0;
@@ -207,20 +160,17 @@ public class LevelGenerator : Node2D
             }
         }
         _startingRoom.type = 1;
-        float currDistance = 0;
+        currentMaxDistance = 0;
         foreach(Room room in rooms){
             if(room != null){
                 float distance = (new Vector2(_startingRoom.globalX, _startingRoom.globalY) - new Vector2(room.globalX, room.globalY)).LengthSquared();
                 if (distance > currentMaxDistance){
-                    _bossRoom = room;
                     currentMaxDistance = distance;
+                    _bossRoom = room;
                 }
             }
         }
         _bossRoom.type = 2;
-    }
-    public Dictionary<Room, List<Area2D>> GetDoorMap(){
-        return this._doorMap;
     }
     public Room GetStartingRoom(){
         return this._startingRoom;

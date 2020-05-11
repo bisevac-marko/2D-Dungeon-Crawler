@@ -1,24 +1,29 @@
 using Godot;
-using System;
 
 public class Player : Character
 {
-    private Vector2 _direction = Vector2.Zero;
-    private Vector2 _speed = new Vector2(100, 100);
+    public Vector2 direction = Vector2.Zero;
+    public Vector2 speed = new Vector2(50, 50);
+    public Vector2 rollSpeed = new Vector2(200, 200);
+    public float rollDistance = 40;
+
+    public override void _Ready(){
+        CurrentState = new Idle(this);
+    }
 
     public override void _PhysicsProcess(float delta){
-        _direction = GetDirection();
-        Velocity = CalculateVelocity(Velocity, _direction, _speed);
-        Velocity = MoveAndSlide(Velocity); 
+        CurrentState.Update();
     }
 
-    private Vector2 CalculateVelocity(Vector2 velocity, Vector2 direction, Vector2 speed){
-        Vector2 vel = direction * speed;
-        return vel;
-    }
-    private Vector2 GetDirection(){
-        Vector2 direction = new Vector2(Input.GetActionStrength("move_right") - Input.GetActionStrength("move_left"),
-                                            Input.GetActionStrength("move_down") - Input.GetActionStrength("move_up"));
-        return direction; 
+    public void ChangeState(State state){
+        if (CurrentState != null){
+            CurrentState.OnStateExit();
+        }
+
+        CurrentState = state;
+
+        if(CurrentState != null){
+            CurrentState.OnStateEnter();
+        }
     }
 }

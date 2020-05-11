@@ -1,3 +1,5 @@
+using Godot;
+
 public class Room{
     public int x;
     public int y;
@@ -8,6 +10,7 @@ public class Room{
     public int roomSizeX = 200;
     public int roomSizeY = 120;
     public const float ROOM_OFFSET = 1.2f;
+    public Area2D[] doors;
 
     public Room(int x, int y, int type){
         this.x = x;
@@ -20,4 +23,5 @@ public class Room{
         globalX = roomSizeX * x * ROOM_OFFSET;
         globalY = roomSizeY * y * ROOM_OFFSET;
     }
+
 }

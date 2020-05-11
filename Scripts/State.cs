@@ -9,6 +9,6 @@ public abstract class State {
     public Character character;
     public abstract void Update();
 
-    public virtual void OnStateEnter();
-    public virtual void OnStateExit();
+    public virtual void OnStateEnter() { }
+    public virtual void OnStateExit() { }
 }
