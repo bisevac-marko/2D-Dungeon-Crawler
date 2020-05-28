@@ -13,10 +13,10 @@ public class Roll : State
     }
 
     public override void Update(){
-        player.Velocity = CalculateVelocity(player.Velocity, player.rollSpeed, direction);
+        player.Velocity = CalculateVelocity(player.Velocity, player.RollSpeed, direction);
         player.Velocity = player.MoveAndSlide(player.Velocity);
         float distanceCovered = (player.GlobalPosition - startingPosition).Length();
-        if (distanceCovered >= player.rollDistance || player.Velocity == Vector2.Zero){
+        if (distanceCovered >= player.RollDistance || player.Velocity == Vector2.Zero){
             player.ChangeState(new Idle(character));
         }
     }

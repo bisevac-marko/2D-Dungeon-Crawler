@@ -5,27 +5,27 @@ public class EnemySpawner : Node2D{
 
     private List<KinematicBody2D> _enemys;
     private PackedScene _enemyScene;
-    private RandomNumberGenerator rng;
+    private RandomNumberGenerator _rng;
 
     public override void _Ready(){
-        rng = new RandomNumberGenerator();
+         _rng = new RandomNumberGenerator();
         _enemys = new List<KinematicBody2D>();
         _enemyScene = GD.Load<PackedScene>("res://Prefabs/EnemyCharger.tscn");
-    }
+   }
 
     public void SpawnEnemys(Room[,] rooms){
         foreach(Room room in rooms){
             if(room == null) continue;
-            if(room.type == 0){
-                rng.Randomize();
-                int numberOfEnemys = rng.RandiRange(3, 7);
+            if(room.Type == 0){
+                _rng.Randomize();
+                int numberOfEnemys = _rng.RandiRange(3, 7);
                 for(int i = 0; i < numberOfEnemys; i++){
-                    rng.Randomize();
+                    _rng.Randomize();
                     KinematicBody2D enemy = (KinematicBody2D) _enemyScene.Instance();
                     _enemys.Add(enemy);
                     AddChild(enemy);
-                    rng.Randomize();
-                    enemy.GlobalPosition = new Vector2(rng.RandfRange(room.globalX, room.globalX + rng.RandfRange(-100, 100)), rng.RandfRange(room.globalY, room.globalY + rng.RandfRange(-50, 50)));
+                    _rng.Randomize();
+                    enemy.GlobalPosition = new Vector2(_rng.RandfRange(room.GlobalX, room.GlobalX + _rng.RandfRange(-100, 100)), _rng.RandfRange(room.GlobalY, room.GlobalY + _rng.RandfRange(-50, 50)));
                 }
             }
         }

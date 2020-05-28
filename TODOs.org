@@ -1,7 +1,7 @@
-* 2D Dungeon Crawler [3/7]
+* 2D Dungeon Crawler [5/7]
   * [X] Implement state machine
-  * [ ] Refactor level generator
-  * [ ] Add room manager
+  * [X] Refactor level generator
+  * [X] Add room manager
   * [ ] fix Room transitions
   * [X] Fix enemy spawner
   * [X] Fix null reference bug

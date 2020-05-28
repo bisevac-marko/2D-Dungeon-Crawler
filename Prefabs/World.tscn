@@ -8,11 +8,13 @@
 script = ExtResource( 2 )
 
 [node name="Camera2D" type="Camera2D" parent="."]
+scale = Vector2( 0.997789, 1.01649 )
 current = true
 zoom = Vector2( 0.2, 0.2 )
 
-[node name="Enemy Spawner" type="Node2D" parent="."]
-script = ExtResource( 1 )
-
-[node name="RoomManager" type="Node2D" parent="."]
+[node name="Room Manager" type="Node2D" parent="."]
 script = ExtResource( 3 )
+
+[node name="Enemy Spawner" type="Node2D" parent="."]
+scale = Vector2( 1, 0.997351 )
+script = ExtResource( 1 )

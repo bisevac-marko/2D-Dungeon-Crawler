@@ -8,8 +8,8 @@ public class Move : State
 
     public override void Update(){
         Player player = (Player)character;
-        player.direction = GetDirection();
-        player.Velocity = CalculateVelocity(player.Velocity, player.direction, player.speed);
+        player.Direction = GetDirection();
+        player.Velocity = CalculateVelocity(player.Velocity, player.Direction, player.Speed);
         Vector2 playerPreviousPosition = player.GlobalPosition;
         player.Velocity = player.MoveAndSlide(player.Velocity);
 

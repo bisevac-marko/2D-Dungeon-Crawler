@@ -2,10 +2,10 @@ using Godot;
 
 public class Player : Character
 {
-    public Vector2 direction = Vector2.Zero;
-    public Vector2 speed = new Vector2(50, 50);
-    public Vector2 rollSpeed = new Vector2(200, 200);
-    public float rollDistance = 40;
+    public Vector2 Direction = Vector2.Zero;
+    public Vector2 Speed = new Vector2(50, 50);
+    public Vector2 RollSpeed = new Vector2(200, 200);
+    public float RollDistance = 40;
 
     public override void _Ready(){
         CurrentState = new Idle(this);
